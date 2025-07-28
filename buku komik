@@ -1,0 +1,84 @@
+import { useState } from "react";
+
+const initialComics = [
+  { id: 1, title: "One Piece", price: 25000, stock: 10, image: "https://via.placeholder.com/100" },
+  { id: 2, title: "Naruto", price: 22000, stock: 5, image: "https://via.placeholder.com/100" },
+  { id: 3, title: "Attack on Titan", price: 30000, stock: 8, image: "https://via.placeholder.com/100" }
+];
+
+export default function App() {
+  const [comics, setComics] = useState(initialComics);
+  const [cart, setCart] = useState([]);
+
+  const addToCart = (comic) => {
+    if (comic.stock === 0) return alert("Stok habis!");
+    const exists = cart.find((item) => item.id === comic.id);
+    if (exists) {
+      if (exists.quantity < comic.stock) {
+        setCart(
+          cart.map((item) =>
+            item.id === comic.id ? { ...item, quantity: item.quantity + 1 } : item
+          )
+        );
+      } else {
+        alert("Jumlah melebihi stok!");
+      }
+    } else {
+      setCart([...cart, { ...comic, quantity: 1 }]);
+    }
+  };
+
+  const checkout = () => {
+    const updatedComics = comics.map((comic) => {
+      const item = cart.find((c) => c.id === comic.id);
+      if (item) {
+        return { ...comic, stock: comic.stock - item.quantity };
+      }
+      return comic;
+    });
+    setComics(updatedComics);
+    setCart([]);
+    alert("Pembelian berhasil!");
+  };
+
+  return (
+    <div className="p-6 max-w-4xl mx-auto">
+      <h1 className="text-3xl font-bold mb-4">Toko Buku Komik</h1>
+      <div className="grid grid-cols-3 gap-4">
+        {comics.map((comic) => (
+          <div key={comic.id} className="border p-4 rounded-xl shadow-md">
+            <img src={comic.image} alt={comic.title} className="mb-2 w-full" />
+            <h2 className="text-xl font-semibold">{comic.title}</h2>
+            <p>Harga: Rp{comic.price}</p>
+            <p>Stok: {comic.stock}</p>
+            <button
+              onClick={() => addToCart(comic)}
+              className="mt-2 px-4 py-1 bg-blue-500 text-white rounded"
+            >
+              Tambah ke Keranjang
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {cart.length > 0 && (
+        <div className="mt-10">
+          <h2 className="text-2xl font-bold mb-2">Keranjang Belanja</h2>
+          <ul className="space-y-2">
+            {cart.map((item) => (
+              <li key={item.id}>
+                {item.title} x {item.quantity} = Rp{item.price * item.quantity}
+              </li>
+            ))}
+          </ul>
+          <button
+            onClick={checkout}
+            className="mt-4 px-6 py-2 bg-green-600 text-white rounded"
+          >
+            Checkout
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
